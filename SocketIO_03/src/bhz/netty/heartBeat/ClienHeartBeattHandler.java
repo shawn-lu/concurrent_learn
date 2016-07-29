@@ -1,13 +1,7 @@
 package bhz.netty.heartBeat;
 
-import io.netty.channel.ChannelHandlerAdapter;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.ReferenceCountUtil;
-
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -16,7 +10,11 @@ import java.util.concurrent.TimeUnit;
 import org.hyperic.sigar.CpuPerc;
 import org.hyperic.sigar.Mem;
 import org.hyperic.sigar.Sigar;
-import org.hyperic.sigar.Swap;
+import org.hyperic.sigar.SigarException;
+
+import io.netty.channel.ChannelHandlerAdapter;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.ReferenceCountUtil;
 
 
 public class ClienHeartBeattHandler extends ChannelHandlerAdapter {
@@ -33,6 +31,7 @@ public class ClienHeartBeattHandler extends ChannelHandlerAdapter {
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		addr = InetAddress.getLocalHost();
         String ip = addr.getHostAddress();
+        ip = "192.168.1.200";
 		String key = "1234";
 		//证书
 		String auth = ip + "," + key;
@@ -105,4 +104,26 @@ public class ClienHeartBeattHandler extends ChannelHandlerAdapter {
 	    }
 	    
 	}
+    
+    public static void main(String[] args) {
+        try {
+            Sigar sigar = new Sigar();
+            CpuPerc cpuPerc = sigar.getCpuPerc();
+            HashMap<String, Object> cpuPercMap = new HashMap<String, Object>();
+            cpuPercMap.put("combined", cpuPerc.getCombined());
+            cpuPercMap.put("user", cpuPerc.getUser());
+            cpuPercMap.put("sys", cpuPerc.getSys());
+            cpuPercMap.put("wait", cpuPerc.getWait());
+            cpuPercMap.put("idle", cpuPerc.getIdle());
+            // memory
+            Mem mem = sigar.getMem();
+            HashMap<String, Object> memoryMap = new HashMap<String, Object>();
+            memoryMap.put("total", mem.getTotal() / 1024L);
+            memoryMap.put("used", mem.getUsed() / 1024L);
+            memoryMap.put("free", mem.getFree() / 1024L);
+        } catch (SigarException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 }
